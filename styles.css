@@ -1,0 +1,63 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+#map {
+    height: 600px;
+    margin-bottom: 30px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.legend {
+    font-size: 14px;
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    z-index: 1;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.legend .gradient {
+    height: 20px;
+    width: 200px;
+    background: linear-gradient(to right, #fff, #ffa500);
+}
+
+#lineplot,
+#barplot {
+    margin-top: 30px;
+    margin: 0 auto 50px;
+    display: block;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
+
+.tooltip {
+    position: absolute;
+    z-index: 10;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+    pointer-events: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+#totalLineplot {
+    margin-top: 30px;
+    margin: 0 auto 50px;
+    display: block;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
