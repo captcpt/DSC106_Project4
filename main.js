@@ -14,6 +14,7 @@ let countryData;
 let colorScale;
 let selectedYear;
 let selectedTechnology;
+let clickedCountry = null;
 
 map.on('style.load', () => {
     map.setFog({});
@@ -117,7 +118,9 @@ map.on('mousemove', 'country-boundaries', (e) => {
     const countryName = e.features[0].properties.name_en;
     const countryStats = countryData.get(countryName);
 
-    updateLinePlotData(countryName);
+    if (!clickedCountry || countryName === clickedCountry) {
+        updateLinePlotData(countryName);
+    }
 
     if (countryStats) {
         const dataForYear = countryStats.find(d => d["Year"] === selectedYear && d["Technology"] === selectedTechnology);
@@ -138,6 +141,8 @@ map.on('mouseleave', 'country-boundaries', () => {
 
 map.on('click', 'country-boundaries', (e) => {
     const countryName = e.features[0].properties.name_en;
+    clickedCountry = countryName;
+    
     const countryStats = countryData.get(countryName);
 
     updateLinePlotData(countryName);
