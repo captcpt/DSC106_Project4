@@ -53,11 +53,69 @@ body {
     font-weight: 500;
 }
 
-#totalLineplot {
-    margin-top: 30px;
-    margin: 0 auto 50px;
+#radarChartRenewable,
+#radarChartNonRenewable {
+    margin: 30px auto 50px;
     display: block;
     border: 1px solid #dee2e6;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     padding: 20px;
+}
+
+.radar-charts {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.radar-charts svg {
+    margin: 0 20px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
+
+.radar-area {
+    fill: #6eadc8;
+    fill-opacity: 0.3;
+}
+
+.radar-stroke {
+    stroke: #6eadc8;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.axis line {
+    stroke: #ccc;
+    stroke-width: 1px;
+}
+
+.axis .legend {
+    font-size: 11px;
+    text-anchor: middle;
+}
+
+.radar-title {
+    font-size: 16px;
+    text-decoration: underline;
+    text-anchor: middle;
+}
+
+.radar-tooltip {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+    pointer-events: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.radar-popup {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    pointer-events: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
