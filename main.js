@@ -147,6 +147,7 @@ map.on('click', 'country-boundaries', (e) => {
 
     updateLinePlotData(countryName);
     updateBarPlotData(countryName);
+    drawRadarCharts(countryName);
 
     if (countryStats) {
         const dataForYear = countryStats.find(d => d["Year"] === selectedYear && d["Technology"] === selectedTechnology);
@@ -326,6 +327,7 @@ function updateBarPlotData(countryName) {
     );
 
     redrawBarPlot(barPlotData, countryName);
+    
 }
 
 function redrawBarPlot(barPlotData, countryName) {
@@ -416,4 +418,146 @@ function redrawBarPlot(barPlotData, countryName) {
         .style("font-size", "16px")
         .style("text-decoration", "underline")
         .text(`${countryName} - Total Electricity Generation by Technology`);
+}
+
+const renewableTechs = ["Solar photovoltaic", "Solar thermal energy", "Onshore wind energy", "Offshore wind energy", "Renewable hydropower", "Mixed Hydro Plants", "Marine energy", "Solid biofuels", "Renewable municipal waste", "Liquid biofuels", "Biogas", "Geothermal energy"];
+const nonRenewableTechs = ["Pumped storage", "Coal and peat", "Oil", "Natural gas", "Fossil fuels n.e.s.", "Nuclear"];
+
+function drawRadarCharts(countryName) {
+    const countryStats = countryData.get(countryName);
+    if (!countryStats) return;
+
+    const renewableData = countryStats.filter(d => renewableTechs.includes(d["Technology"]));
+    const nonRenewableData = countryStats.filter(d => nonRenewableTechs.includes(d["Technology"]));
+
+    drawRadarChart("#radarChartRenewable", renewableData, "Renewable Energy Sources");
+    drawRadarChart("#radarChartNonRenewable", nonRenewableData, "Non-Renewable Energy Sources");
+}
+
+function drawRadarChart(selector, data, title) {
+    const svg = d3.select(selector);
+    svg.selectAll('*').remove();
+
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+    const radius = Math.min(width, height) / 2 * 0.6;
+
+    const groupedData = d3.rollup(
+        data,
+        v => d3.sum(v, d => +d["Electricity statistics"]),
+        d => d["Technology"]
+    );
+
+    const technologies = Array.from(groupedData.keys());
+    const values = Array.from(groupedData.values());
+
+    const maxValue = d3.max(values);
+
+    const angleSlice = Math.PI * 2 / technologies.length;
+
+    const angleScale = d3.scalePoint()
+        .range([0, Math.PI * 2])
+        .domain(technologies);
+
+    const radiusScale = d3.scaleLinear()
+        .range([0, radius])
+        .domain([0, maxValue]);
+
+    const line = d3.lineRadial()
+        .radius(d => radiusScale(d))
+        .angle((d, i) => angleScale(technologies[i]));
+
+    const radarLine = svg.append('g')
+        .attr('class', 'radar-chart')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+    radarLine.selectAll('.radar-path')
+        .data([values])
+        .enter()
+        .append('path')
+        .attr('class', 'radar-path')
+        .attr('d', line)
+        .style('fill', 'steelblue')
+        .style('fill-opacity', 0.3)
+        .style('stroke', 'steelblue')
+        .style('stroke-width', '2px')
+        .style('stroke-opacity', 0.8);
+
+    const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "radar-tooltip")
+        .style("opacity", 0);
+
+    const radarArea = radarLine.select('.radar-path');
+
+    radarArea.on("mouseover", function (event, d) {
+        const popupContent = technologies.map((technology, i) => `${technology}: ${d[i].toLocaleString()} GWh`).join("<br>");
+
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.9);
+        tooltip.html(popupContent)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function () {
+        tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+    });
+
+    const radarCircles = svg.append('g')
+        .attr('class', 'radar-circles')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+    const circles = [0.25, 0.5, 0.75].map(d => maxValue * d);
+
+    radarCircles.selectAll('.radar-circle')
+        .data(circles)
+        .enter()
+        .append('circle')
+        .attr('class', 'radar-circle')
+        .attr('r', d => radiusScale(d))
+        .style('fill', 'none')
+        .style('stroke', 'gray')
+        .style('stroke-width', '1px')
+        .style('stroke-dasharray', '3,3');
+
+    const radarLabels = svg.append('g')
+        .attr('class', 'radar-labels')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+    radarLabels.selectAll('.radar-label')
+        .data(technologies)
+        .enter()
+        .append('text')
+        .attr('class', 'radar-label')
+        .attr('x', (d, i) => radiusScale(maxValue * 1.05) * Math.cos(angleScale(d) - Math.PI / 2))
+        .attr('y', (d, i) => radiusScale(maxValue * 1.05) * Math.sin(angleScale(d) - Math.PI / 2))
+        .style('font-size', '12px')
+        .text(d => d)
+        .style('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .on("mouseover", function (event, d) {
+            const value = groupedData.get(d);
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+            tooltip.html(`${d}: ${value.toLocaleString()} GWh`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    svg.append('text')
+        .attr('class', 'title')
+        .attr('x', width / 2)
+        .attr('y', 20)
+        .style('font-size', '16px')
+        .style('text-anchor', 'middle')
+        .text(title);
 }
