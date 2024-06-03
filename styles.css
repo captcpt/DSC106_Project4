@@ -2,23 +2,21 @@ body {
     font-family: 'Roboto', sans-serif;
     color: #333;
     background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 #map {
-    height: 600px;
-    margin-bottom: 30px;
+    height: 500px;
     border: 1px solid #dee2e6;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
 .legend {
     font-size: 14px;
-    position: absolute;
-    bottom: 30px;
-    left: 10px;
     background: white;
     padding: 10px;
-    z-index: 1;
     border: 1px solid #dee2e6;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
@@ -29,14 +27,14 @@ body {
     background: linear-gradient(to right, #fff, #ffa500);
 }
 
-#lineplot,
-#barplot {
-    margin-top: 30px;
-    margin: 0 auto 50px;
-    display: block;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    padding: 20px;
+.card-header {
+    background-color: #343a40;
+    color: #fff;
+    font-weight: bold;
+}
+
+.card-body svg {
+    margin-bottom: 10px;
 }
 
 .tooltip {
@@ -53,69 +51,56 @@ body {
     font-weight: 500;
 }
 
-#radarChartRenewable,
-#radarChartNonRenewable {
-    margin: 30px auto 50px;
-    display: block;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    padding: 20px;
-}
-
-.radar-charts {
+.pie-chart-container {
     display: flex;
-    justify-content: center;
-    margin-top: 30px;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
-.radar-charts svg {
-    margin: 0 20px;
+.pie-chart {
     border: 1px solid #dee2e6;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     padding: 20px;
 }
 
-.radar-area {
-    fill: #6eadc8;
-    fill-opacity: 0.3;
-}
-
-.radar-stroke {
-    stroke: #6eadc8;
-    stroke-width: 2px;
-    fill: none;
-}
-
-.axis line {
-    stroke: #ccc;
-    stroke-width: 1px;
-}
-
-.axis .legend {
-    font-size: 11px;
-    text-anchor: middle;
-}
-
-.radar-title {
-    font-size: 16px;
-    text-decoration: underline;
-    text-anchor: middle;
-}
-
-.radar-tooltip {
-    position: absolute;
-    background-color: white;
+.pie-chart-legend {
+    margin-left: 20px;
     border: 1px solid #dee2e6;
-    padding: 5px;
-    pointer-events: none;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    padding: 20px;
 }
 
-.radar-popup {
-    position: absolute;
-    background-color: white;
+#map-container {
+    height: 700px;
+    overflow: hidden;
     border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #f8f9fa; 
+}
+
+.plots-container {
+    max-height: 700px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
     padding: 10px;
-    pointer-events: none;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background-color: #e9ecef; 
+}
+
+.row {
+    position: relative;
+}
+
+.row:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3px;
+    height: 100%;
+    background-color: #e9ecef;
+}
+
+footer {
+    margin-top: auto;
 }
