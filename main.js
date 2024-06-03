@@ -120,6 +120,8 @@ map.on('mousemove', 'country-boundaries', (e) => {
 
     if (!clickedCountry || countryName === clickedCountry) {
         updateLinePlotData(countryName);
+        updateBarPlotData(countryName);
+        drawPieCharts(countryName);
     }
 
     if (countryStats) {
@@ -147,7 +149,7 @@ map.on('click', 'country-boundaries', (e) => {
 
     updateLinePlotData(countryName);
     updateBarPlotData(countryName);
-    drawRadarCharts(countryName);
+    drawPieCharts(countryName);
 
     if (countryStats) {
         const dataForYear = countryStats.find(d => d["Year"] === selectedYear && d["Technology"] === selectedTechnology);
@@ -216,12 +218,17 @@ function redrawLinePlot(countryName) {
     const svg = d3.select('#lineplot');
     svg.selectAll('*').remove();
 
-    const margin = { top: 30, right: 30, bottom: 60, left: 80 };
-    const width = +svg.attr("width") - margin.left - margin.right;
-    const height = +svg.attr("height") - margin.top - margin.bottom;
+    const width = +svg.node().getBoundingClientRect().width;
+    const height = 300;
 
-    const x = d3.scaleLinear().range([0, width]);
-    const y = d3.scaleLinear().range([height, 0]);
+    const margin = { top: 20, right: 20, bottom: 40, left: 80 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    document.getElementById('linePlotTitle').textContent = `${countryName} - Total Electricty Generation`;
+
+    const x = d3.scaleLinear().range([0, innerWidth]);
+    const y = d3.scaleLinear().range([innerHeight, 0]);
 
     const xAxis = d3.axisBottom(x);
     const yAxis = d3.axisLeft(y);
@@ -231,13 +238,13 @@ function redrawLinePlot(countryName) {
         .y(d => y(d.value));
 
     const g = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     x.domain(d3.extent(linePlotData, d => d.year));
     y.domain([0, d3.max(linePlotData, d => d.value)]);
 
     g.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", `translate(0, ${innerHeight})`)
         .call(xAxis);
 
     g.append("g")
@@ -245,7 +252,7 @@ function redrawLinePlot(countryName) {
         .append("text")
         .attr("fill", "#000")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -margin.left + 10)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
         .text("Electricity Generation (GWh)");
@@ -302,18 +309,7 @@ function redrawLinePlot(countryName) {
         .on("click", function (event, d) {
             alert(`Year: ${d.year}, Value: ${d.value} GWh`);
         });
-
-    svg.append("text")
-        .attr("x", (width / 2))
-        .attr("y", (margin.top))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text(countryName);
-
-    updateBarPlotData(countryName);
 }
-
 
 
 function updateBarPlotData(countryName) {
@@ -334,18 +330,23 @@ function redrawBarPlot(barPlotData, countryName) {
     const svg = d3.select('#barplot');
     svg.selectAll('*').remove();
 
-    const margin = { top: 30, right: 30, bottom: 180, left: 80 };
-    const width = +svg.attr("width") - margin.left - margin.right;
-    const height = +svg.attr("height") - margin.top - margin.bottom;
+    const width = +svg.node().getBoundingClientRect().width;
+    const height = 300;
 
-    const x = d3.scaleBand().range([0, width]).padding(0.1);
-    const y = d3.scaleLinear().range([height, 0]);
+    const margin = { top: 20, right: 20, bottom: 100, left: 80 }; 
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    document.getElementById('barPlotTitle').textContent = `${countryName} - Total Electricity Generation by Technology`;
+
+    const x = d3.scaleBand().range([0, innerWidth]).padding(0.1);
+    const y = d3.scaleLinear().range([innerHeight, 0]);
 
     const xAxis = d3.axisBottom(x);
     const yAxis = d3.axisLeft(y);
 
     const g = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     const data = Array.from(barPlotData.entries()).sort((a, b) => b[1] - a[1]);
 
@@ -353,7 +354,7 @@ function redrawBarPlot(barPlotData, countryName) {
     y.domain([0, d3.max(data, d => d[1])]);
 
     g.append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", `translate(0, ${innerHeight})`)
         .call(xAxis)
         .selectAll("text")
         .attr("y", 0)
@@ -367,7 +368,7 @@ function redrawBarPlot(barPlotData, countryName) {
         .append("text")
         .attr("fill", "#000")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -margin.left + 10)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
         .text("Total Electricity Generation (GWh)");
@@ -384,7 +385,7 @@ function redrawBarPlot(barPlotData, countryName) {
         .attr("x", d => x(d[0]))
         .attr("width", x.bandwidth())
         .attr("y", d => y(d[1]))
-        .attr("height", d => height - y(d[1]))
+        .attr("height", d => innerHeight - y(d[1]))
         .attr("fill", "steelblue")
         .on("mouseover", function (event, d) {
             d3.select(this)
@@ -410,37 +411,40 @@ function redrawBarPlot(barPlotData, countryName) {
                 .duration(500)
                 .style("opacity", 0);
         });
-
-    svg.append("text")
-        .attr("x", (width / 2))
-        .attr("y", (margin.top - 10))
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("text-decoration", "underline")
-        .text(`${countryName} - Total Electricity Generation by Technology`);
 }
 
 const renewableTechs = ["Solar photovoltaic", "Solar thermal energy", "Onshore wind energy", "Offshore wind energy", "Renewable hydropower", "Mixed Hydro Plants", "Marine energy", "Solid biofuels", "Renewable municipal waste", "Liquid biofuels", "Biogas", "Geothermal energy"];
 const nonRenewableTechs = ["Pumped storage", "Coal and peat", "Oil", "Natural gas", "Fossil fuels n.e.s.", "Nuclear"];
 
-function drawRadarCharts(countryName) {
+let renewableData, nonRenewableData;
+
+function drawPieCharts(countryName) {
     const countryStats = countryData.get(countryName);
     if (!countryStats) return;
 
-    const renewableData = countryStats.filter(d => renewableTechs.includes(d["Technology"]));
-    const nonRenewableData = countryStats.filter(d => nonRenewableTechs.includes(d["Technology"]));
+    renewableData = countryStats.filter(d => renewableTechs.includes(d["Technology"]));
+    nonRenewableData = countryStats.filter(d => nonRenewableTechs.includes(d["Technology"]));
 
-    drawRadarChart("#radarChartRenewable", renewableData, "Renewable Energy Sources");
-    drawRadarChart("#radarChartNonRenewable", nonRenewableData, "Non-Renewable Energy Sources");
+    const pieChartType = document.getElementById('pieChartType').value;
+    drawPieChart(pieChartType, countryName);
 }
 
-function drawRadarChart(selector, data, title) {
-    const svg = d3.select(selector);
-    svg.selectAll('*').remove();
+function drawPieChart(type, countryName) {
+    const pieChartSvg = d3.select('#pieChart');
+    const legendSvg = d3.select('#pieChartLegend');
+    pieChartSvg.selectAll('*').remove();
+    legendSvg.selectAll('*').remove();
 
-    const width = +svg.attr("width");
-    const height = +svg.attr("height");
-    const radius = Math.min(width, height) / 2 * 0.6;
+    const pieChartWidth = +pieChartSvg.node().getBoundingClientRect().width;
+    const pieChartHeight = +pieChartSvg.node().getBoundingClientRect().height;
+    const legendWidth = +legendSvg.node().getBoundingClientRect().width;
+    const legendHeight = +legendSvg.node().getBoundingClientRect().height;
+
+    const radius = Math.min(pieChartWidth, pieChartHeight) / 2 * 0.8;
+    const innerRadius = radius * 0.4;
+
+    const data = type === 'renewable' ? renewableData : nonRenewableData;
+    const title = type === 'renewable' ? 'Renewable Energy Sources' : 'Non-Renewable Energy Sources';
 
     const groupedData = d3.rollup(
         data,
@@ -450,114 +454,102 @@ function drawRadarChart(selector, data, title) {
 
     const technologies = Array.from(groupedData.keys());
     const values = Array.from(groupedData.values());
+    const total = d3.sum(values);
 
-    const maxValue = d3.max(values);
+    const pie = d3.pie()
+        .sort(null)
+        .value(d => d);
 
-    const angleSlice = Math.PI * 2 / technologies.length;
+    const arcGenerator = d3.arc()
+        .innerRadius(innerRadius)
+        .outerRadius(radius);
 
-    const angleScale = d3.scalePoint()
-        .range([0, Math.PI * 2])
-        .domain(technologies);
-
-    const radiusScale = d3.scaleLinear()
-        .range([0, radius])
-        .domain([0, maxValue]);
-
-    const line = d3.lineRadial()
-        .radius(d => radiusScale(d))
-        .angle((d, i) => angleScale(technologies[i]));
-
-    const radarLine = svg.append('g')
-        .attr('class', 'radar-chart')
-        .attr('transform', `translate(${width / 2}, ${height / 2})`);
-
-    radarLine.selectAll('.radar-path')
-        .data([values])
+        const pieChart = pieChartSvg.append('g')
+        .attr('transform', `translate(${pieChartWidth / 2}, ${pieChartHeight / 2})`);
+    
+    pieChart.selectAll('.arc')
+        .data(pie(values.filter(value => value > 0)))
         .enter()
+        .append('g')
+        .attr('class', 'arc')
         .append('path')
-        .attr('class', 'radar-path')
-        .attr('d', line)
-        .style('fill', 'steelblue')
-        .style('fill-opacity', 0.3)
-        .style('stroke', 'steelblue')
+        .attr('d', arcGenerator)
+        .style('fill', (d, i) => d3.schemeSet3[i % 12])
+        .style('stroke', 'white')
         .style('stroke-width', '2px')
-        .style('stroke-opacity', 0.8);
-
-    const tooltip = d3.select("body")
-        .append("div")
-        .attr("class", "radar-tooltip")
-        .style("opacity", 0);
-
-    const radarArea = radarLine.select('.radar-path');
-
-    radarArea.on("mouseover", function (event, d) {
-        const popupContent = technologies.map((technology, i) => `${technology}: ${d[i].toLocaleString()} GWh`).join("<br>");
-
-        tooltip.transition()
-            .duration(200)
-            .style("opacity", 0.9);
-        tooltip.html(popupContent)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY - 28) + "px");
-    })
-    .on("mouseout", function () {
-        tooltip.transition()
-            .duration(500)
-            .style("opacity", 0);
-    });
-
-    const radarCircles = svg.append('g')
-        .attr('class', 'radar-circles')
-        .attr('transform', `translate(${width / 2}, ${height / 2})`);
-
-    const circles = [0.25, 0.5, 0.75].map(d => maxValue * d);
-
-    radarCircles.selectAll('.radar-circle')
-        .data(circles)
-        .enter()
-        .append('circle')
-        .attr('class', 'radar-circle')
-        .attr('r', d => radiusScale(d))
-        .style('fill', 'none')
-        .style('stroke', 'gray')
-        .style('stroke-width', '1px')
-        .style('stroke-dasharray', '3,3');
-
-    const radarLabels = svg.append('g')
-        .attr('class', 'radar-labels')
-        .attr('transform', `translate(${width / 2}, ${height / 2})`);
-
-    radarLabels.selectAll('.radar-label')
-        .data(technologies)
-        .enter()
-        .append('text')
-        .attr('class', 'radar-label')
-        .attr('x', (d, i) => radiusScale(maxValue * 1.05) * Math.cos(angleScale(d) - Math.PI / 2))
-        .attr('y', (d, i) => radiusScale(maxValue * 1.05) * Math.sin(angleScale(d) - Math.PI / 2))
-        .style('font-size', '12px')
-        .text(d => d)
-        .style('text-anchor', 'middle')
-        .attr('dy', '0.35em')
-        .on("mouseover", function (event, d) {
-            const value = groupedData.get(d);
-            tooltip.transition()
+        .on('mouseover', function (event, d) {
+            d3.select(this)
+                .transition()
                 .duration(200)
-                .style("opacity", 0.9);
-            tooltip.html(`${d}: ${value.toLocaleString()} GWh`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+                .attr('d', d3.arc()
+                    .innerRadius(innerRadius)
+                    .outerRadius(radius * 1.05)
+                );
+    
+            const technology = technologies[d.index];
+            const value = d.value.toLocaleString();
+            const percentage = Math.round(d.value / total * 100);
+    
+            const textGroup = pieChart.append('g')
+                .attr('class', 'text-group');
+    
+            textGroup.append('text')
+                .attr('class', 'text-technology')
+                .attr('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('font-size', '16px')
+                .text(technology);
+    
+            textGroup.append('text')
+                .attr('class', 'text-value')
+                .attr('text-anchor', 'middle')
+                .attr('y', 20)
+                .style('font-size', '14px')
+                .text(`${value} GWh (${percentage}%)`);
         })
-        .on("mouseout", function () {
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+        .on('mouseout', function (d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('d', arcGenerator);
+    
+            pieChart.selectAll('.text-group').remove();
         });
 
-    svg.append('text')
-        .attr('class', 'title')
-        .attr('x', width / 2)
-        .attr('y', 20)
-        .style('font-size', '16px')
-        .style('text-anchor', 'middle')
-        .text(title);
+    const legendGroup = legendSvg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', `translate(10, 20)`);
+
+    const legendItems = pie(values.filter(value => value > 0));
+    const numColumns = 1;
+    const numRows = Math.ceil(legendItems.length / numColumns);
+
+    const legend = legendGroup.selectAll('.legend-item')
+        .data(legendItems)
+        .enter()
+        .append('g')
+        .attr('class', 'legend-item')
+        .attr('transform', (d, i) => {
+            const column = i % numColumns;
+            const row = Math.floor(i / numColumns);
+            return `translate(0, ${row * 20})`;
+        });
+
+    legend.append('rect')
+        .attr('width', 18)
+        .attr('height', 18)
+        .style('fill', (d, i) => d3.schemeSet3[i % 12]);
+
+    legend.append('text')
+        .attr('x', 24)
+        .attr('y', 9)
+        .attr('dy', '.35em')
+        .text(d => technologies[d.index]);
 }
+
+document.getElementById('pieChartType').addEventListener('change', function () {
+    const countryName = clickedCountry;
+    if (countryName) {
+        drawPieChart(this.value, countryName);
+    }
+});
