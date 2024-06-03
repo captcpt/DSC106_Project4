@@ -1,68 +1,127 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <title>Electricity Statistics Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css">
     <link href="styles.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
-
 <body>
-    <div class="container my-5">
-        <h1 class="text-center mb-4">Electricity Statistics Dashboard</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Electricity Statistics Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-5">
         <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="year" class="form-label">Select Year:</label>
-                <select id="year" class="form-select"></select>
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Map Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="year" class="form-label">Select Year:</label>
+                                <select id="year" class="form-select"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="technology" class="form-label">Select Technology:</label>
+                                <select id="technology" class="form-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label for="technology" class="form-label">Select Technology:</label>
-                <select id="technology" class="form-select"></select>
+        </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div id="map-container">
+            <div id="map" class="mb-3"></div>
+            <div class="legend mb-3">
+                <div class="gradient"></div>
+                <div class="label d-flex justify-content-between">
+                    <span>0</span>
+                    <span id="max-value">Max</span>
+                </div>
+                <div><span class="me-2" style="background-color: darkgray; width: 20px; height: 20px; display: inline-block;"></span> No Data</div>
+            </div>
+            <div class="instructions">
+                <p>Click on a country on the map to display the plots below. Each plot represents the total electricity generation either by year or by type for the selected country. The filters above only alter the map display to see how different countries compare for a given year and energy generation technology.</p>
             </div>
         </div>
-        <div id="map" class="mb-3 mx-auto"></div>
-        <div class="legend mb-3">
-            <div class="gradient"></div>
-            <div class="label d-flex justify-content-between">
-                <span>0</span>
-                <span id="max-value">Max</span>
-            </div>
-            <div><span class="me-2"
-                    style="background-color: darkgray; width: 20px; height: 20px; display: inline-block;"></span> No
-                Data</div>
-        </div>
-        <div class="instructions">
-            <p>Click on a country on the map to display the plots below. Each plot represents the total electricity generation either by year or by type for the selected country.
-                The filters above only alter the map display to see how different countries compare for a given year and energy generation technology.
-            </p>
-        </div>
-        <svg id="lineplot" width="1000" height="500"></svg>
-        <div>
-            <p>We plan to have text outlining what is shown in the plot as well as some key values for past and more recent years that will dynamically change with the 
-                country selected for this plot.
-            </p>
-        </div>
-        <svg id="barplot" width="1000" height="500"></svg>
-        <div>
-            <p>We plan to have text outlining what is shown in the plot as well as some key values for some technologies of interest within this plot that will dynamically change
-                with the selected country.
-            </p>
-        </div>
-        <div class="radar-charts">
-            <svg id="radarChartRenewable" width="600" height="600"></svg>
-            <svg id="radarChartNonRenewable" width="600" height="600"></svg>
-        </div>
-        <div>
-            <p>We plan to compare the top versus lowest technology for renewable and non-renewable energy for the selected country that will dynamically change with the selection.</p>
-        </div>          
     </div>
+        <div class="col-md-6">
+            <div class="plots-container">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title" id="linePlotTitle">Total Electricty Generation</h5>
+                </div>
+                <div class="card-body">
+                    <svg id="lineplot" width="100%" height="300"></svg>
+                    <p></p>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title" id="barPlotTitle">Total Electricity Generation by Technology</h5>
+                </div>
+                <div class="card-body">
+                    <svg id="barplot" width="100%" height="300"></svg>
+                    <p></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Total Electricity Generation by Renewability</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="pieChartType" class="form-label">Select Pie Chart Type:</label>
+                        <select id="pieChartType" class="form-select">
+                            <option value="renewable">Renewable</option>
+                            <option value="non-renewable">Non-Renewable</option>
+                        </select>
+                    </div>
+                    <div class="pie-chart-container">
+                        <div class="pie-chart">
+                            <svg id="pieChart" width="300" height="300"></svg>
+                        </div>
+                        <div class="pie-chart-legend">
+                            <svg id="pieChartLegend" width="250" height="300"></svg>
+                        </div>
+                    </div>
+                    <p></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <footer class="bg-dark text-white py-3">
+        <div class="container">
+            <p class="text-center mb-0">2023 Electricity Statistics Dashboard</p>
+        </div>
+    </footer>
+
     <script src="main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
